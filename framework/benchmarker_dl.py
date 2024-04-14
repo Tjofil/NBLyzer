@@ -24,34 +24,29 @@ def benchmark(folder, analyses, level, output):
         except FileNotFoundError:
             notebook = mng.grab_local_json(folder + "\\" + f)
         except json.decoder.JSONDecodeError:
-            print("Warning decode error ")
+            # print("Warning decode error ")
             continue
 
         nblyzer = NBLyzer(level=level, filename=f)
         try:
            nblyzer.load_notebook(notebook["cells"])
-        except KeyError:
-            print("Warning syntax error ")
-            continue
-        except SyntaxError:
-            print("Warning syntax error ")
-            continue
         except Exception:
-            print('Other')
             continue
 
         for start in nblyzer.notebook_IR.keys():
             nblyzer.add_analyses(analyses)
 
             event = RunBatchEvent(start)
-            results = nblyzer.execute_event(event).dumps(True)
-
+            try:
+                results = nblyzer.execute_event(event).dumps(True)
+            except:
+                pass
         for akey in nblyzer.active_analyses:
             for s in nblyzer.all_analyses[akey].stats:
                 stats_analysis[akey].append(s.get_row())
 
         for s in stats_analysis.keys():
-            with open(output + s.replace(" ", "") + ".csv", "w+") as f:
+            with open(output + s.replace(" ", "") + f"_{level}.csv", "w+") as f:
                 writer = csv.writer(f)
                 writer.writerow(["file name", "start cell", "execute time", "avg cell exec time", "max cell exec time", "no. of errors", "true phi rate", "no. fixedpoint", "longest fixedpoint path", "shortest fixedpoint path"])
                 for rows in stats_analysis[s]:

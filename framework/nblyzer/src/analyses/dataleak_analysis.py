@@ -312,7 +312,7 @@ class DataLeakAnalysis(Analysis):
         '''
         if axis == 1:
             domain.dfs.drop_columns(value)
-        else:
+        elif isinstance(value, int):
             domain.dfs.drop_rows(int(value))
 
     def _get_if_int(self, node):
